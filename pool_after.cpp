@@ -6,8 +6,8 @@
 #define Norm(a, b) (std::max(0.0, Normal(a, b)))
 
 Store Pool("Pool capacity", 634);
-Store Booths("Booths", 8);
-Facility Reception("Reception");
+Store Booths("Booths", 13);
+Store Reception("Reception", 2);
 Queue boothQueue("Booth queue");
 
 // 6-9 morning groups
@@ -129,9 +129,9 @@ void Visitor::Behavior()
 
         if (Random() < 0.30)
         {
-            Seize(Reception);
+            Enter(Reception, 1);
             Wait(Exponential(90));
-            Release(Reception);
+            Leave(Reception, 1);
         }
     }
 
@@ -153,7 +153,7 @@ void Visitor::Behavior()
     else
     {
         double swimmerType = Random();
-        if (swimmerType < 0.05)
+        if (swimmerType < 0.02)
         {
             for (const auto swimmer : swimManager)
             {
@@ -161,7 +161,7 @@ void Visitor::Behavior()
             }
             goto normal;
         }
-        else if (swimmerType < 0.15) // 10%
+        else if (swimmerType < 0.12) // 10%
         {
             isProfesional = true;
             swimManager.addSwimmer(this);
@@ -170,8 +170,15 @@ void Visitor::Behavior()
         }
         else
         {
-        normal:
-            Wait(Norm(2400, 600));
+            if (swimmerType < 0.62) // 50%
+            {
+                Wait(Norm(3600, 600));
+            }
+            else
+            {
+            normal:
+                Wait(Norm(2400, 600));
+            }
             Wait(Norm(1800, 300));
         }
     }
@@ -309,14 +316,14 @@ class VisitorGenerator : public Event
     void Behavior()
     {
         (new Visitor(false))->Activate();
-        double d = Exponential(60);
+        double d = Exponential(50);
         Activate(Time + d);
     }
 };
 
 int main()
 {
-    SetOutput("pool.out");
+    SetOutput("pool_after.out");
     Init(0, 54000); // 6-21
     (new VisitorGenerator)->Activate();
     (new Hour)->Activate();
