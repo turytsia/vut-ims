@@ -1,3 +1,6 @@
+//
+// Pool simulation before reconstruction
+//
 #include "simlib.h"
 #include <vector>
 #include <algorithm>
@@ -153,7 +156,7 @@ void Visitor::Behavior()
     else
     {
         double swimmerType = Random();
-        if (swimmerType < 0.05)
+        if (swimmerType < 0.04)
         {
             for (const auto swimmer : swimManager)
             {
@@ -161,7 +164,7 @@ void Visitor::Behavior()
             }
             goto normal;
         }
-        else if (swimmerType < 0.15) // 10%
+        else if (swimmerType < 0.14) // 10%
         {
             isProfesional = true;
             swimManager.addSwimmer(this);

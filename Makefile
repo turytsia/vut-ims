@@ -1,6 +1,5 @@
 #
 # File: Makefile
-# Author: xshevc01
 #
 
 CC = g++
@@ -8,8 +7,9 @@ CFLAGS = -lsimlib
 SRC1 = pool.cpp
 SRC2 = pool_after.cpp
 SRC3 = pool_weekend.cpp
+SRC4 = pool_after_improved.cpp
 
-all: pool pool_after pool_weekend
+all: pool pool_after pool_weekend pool_after_improved
 
 pool: pool.cpp
 	$(CC) $(SRC1) -o pool $(CFLAGS)
@@ -20,10 +20,14 @@ pool_after: pool_after.cpp
 pool_weekend: pool_weekend.cpp
 	$(CC) $(SRC3) -o pool_weekend $(CFLAGS)
 
-run: pool pool_after pool_weekend
+pool_after_improved: pool_after_improved.cpp
+	$(CC) $(SRC4) -o pool_after_improved $(CFLAGS)
+
+run: pool pool_after pool_weekend pool_after_improved
 	./pool
 	./pool_after
 	./pool_weekend
+	./pool_after_improved
 
 clean:
-	rm -f pool pool_after pool_weekend *.out
+	rm -f pool pool_after pool_weekend pool_after_improved *.out

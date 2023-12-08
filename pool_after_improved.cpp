@@ -1,5 +1,5 @@
 //
-// Pool simulation after reconstruction on weeekends and holidays
+// Pool simulation after reconstruction with our suggestions for improvement
 //
 #include "simlib.h"
 #include <vector>
@@ -9,8 +9,8 @@
 #define Norm(a, b) (std::max(0.0, Normal(a, b)))
 
 Store Pool("Pool capacity", 634);
-Store Booths("Booths", 13);
-Store Reception("Reception", 2);
+Store Booths("Booths", 18);
+Store Reception("Reception", 3);
 Queue boothQueue("Booth queue");
 
 // 6-9 morning groups
@@ -23,7 +23,7 @@ int EveningGroups = 5;
 int people_got_in = 0;
 
 Histogram TimeInPool("Time spent in the pool", 0, 600, 20);
-Histogram SwimmerInterrupted("Amount of swimmer's interruptions", 0, 1, 15);
+Histogram SwimmerInterrupted("Amount of swimmer's interruptions", 0, 1, 10);
 
 /**
  * Visitor class
@@ -156,7 +156,7 @@ void Visitor::Behavior()
       else
       {
             double swimmerType = Random();
-            if (swimmerType < 0.04)
+            if (swimmerType < 0.01)
             {
                   for (const auto swimmer : swimManager)
                   {
@@ -164,7 +164,7 @@ void Visitor::Behavior()
                   }
                   goto normal;
             }
-            else if (swimmerType < 0.14) // 10%
+            else if (swimmerType < 0.11) // 10%
             {
                   isProfesional = true;
                   swimManager.addSwimmer(this);
@@ -173,7 +173,7 @@ void Visitor::Behavior()
             }
             else
             {
-                  if (swimmerType < 0.8) // 66%
+                  if (swimmerType < 0.61) // 50%
                   {
                         Wait(Norm(3600, 600));
                   }
@@ -257,6 +257,59 @@ void Visitor::changinRoom(int boothTime, int hallTime)
 }
 
 /**
+ * Group class
+ *
+ * It is used to generate groups of visitors.
+ */
+class Group : public Process
+{
+      void Behavior()
+      {
+            if (Pool.Free() >= GROUP_SIZE)
+            {
+                  Enter(Pool, GROUP_SIZE);
+                  for (int i = 0; i < GROUP_SIZE; i++)
+                  {
+                        (new Visitor(true))->Activate();
+                        people_got_in++;
+                  }
+            }
+      }
+};
+
+/**
+ * Hour class
+ *
+ * It is used to simulate hours in the pool and managing groups.
+ */
+class Hour : public Process
+{
+      void Behavior()
+      {
+            if (MorningGroups > 0)
+            {
+                  MorningGroups--;
+                  Wait(3600);
+                  (new Group)->Activate();
+                  (new Hour)->Activate();
+            }
+            else if (AfternoonNoGroups > 0)
+            {
+                  AfternoonNoGroups--;
+                  Wait(3600);
+                  (new Hour)->Activate();
+            }
+            else if (EveningGroups > 0)
+            {
+                  EveningGroups--;
+                  Wait(3600);
+                  (new Group)->Activate();
+                  (new Hour)->Activate();
+            }
+      }
+};
+
+/**
  * VisitorGenerator class
  *
  * It is used to generate visitors (not in groups).
@@ -266,16 +319,18 @@ class VisitorGenerator : public Event
       void Behavior()
       {
             (new Visitor(false))->Activate();
-            double d = Exponential(30);
+            double d = Exponential(50);
             Activate(Time + d);
       }
 };
 
 int main()
 {
-      SetOutput("pool_weekend.out");
+      SetOutput("pool_after_improved.out");
       Init(0, 54000); // 6-21
       (new VisitorGenerator)->Activate();
+      (new Hour)->Activate();
+      (new Group)->Activate();
       Run();
       Pool.Output();
       Print("People got in: %d\n\n", people_got_in);
