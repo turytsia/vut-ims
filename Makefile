@@ -3,7 +3,7 @@
 #
 
 CC = g++
-CFLAGS = -lsimlib
+CFLAGS = -lsimlib -Wall -Wextra -pedantic -std=c++11 -Werror -pedantic-errors
 SRC1 = pool.cpp
 SRC2 = pool_after.cpp
 SRC3 = pool_weekend.cpp
